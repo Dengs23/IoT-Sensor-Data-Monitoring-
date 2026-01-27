@@ -1,4 +1,14 @@
-# interactive_data_exploration.ipynb
+nano "README.md"
+
+# Stage all changes
+git add .
+
+# Commit once
+git commit -m "Update multiple files: sensor data and documentation"
+
+# Push to GitHub
+git push origin main
+^^^^# interactive_data_exploration.ipynb
 import pandas as pd
 import numpy as np
 import requests
