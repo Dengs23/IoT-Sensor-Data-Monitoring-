@@ -211,3 +211,6 @@ __marimo__/
 *.joblib
 *.csv
 *.png
+*.pkl
+*.csv
+*.png
