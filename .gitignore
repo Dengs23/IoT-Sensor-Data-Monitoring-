@@ -225,3 +225,8 @@ __marimo__/
 *.csv
 *.png
 *.joblib
+
+# Exclude large ML files
+*.pkl
+*.csv
+*.png
