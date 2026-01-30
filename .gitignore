@@ -230,3 +230,7 @@ __marimo__/
 *.pkl
 *.csv
 *.png
+.env
+*.env
+.env
+*.env
