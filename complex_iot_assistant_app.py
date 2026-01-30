@@ -371,6 +371,148 @@ class IntelligentResponseBuilder:
         
         return response
     
+    def _valuation_response(self, confidence: float, data: Dict, analysis: Dict) -> str:
+        """Valuation analysis response"""
+        base_value = data.get('property_value', 2500000)
+        building_size = data.get('building_size', 5000)
+        
+        response = "## 🏢 Building Valuation Impact Analysis\n\n"
+        
+        if confidence > 0.7:
+            response += "**High Confidence Valuation** - Based on provided parameters\n\n"
+        else:
+            response += "**Estimated Valuation** - Using industry benchmarks\n\n"
+        
+        # Calculate valuation impact
+        impact_factors = {
+            'risk_reduction': 0.05,  # 5% value increase from risk reduction
+            'energy_efficiency': 0.04,  # 4% from energy savings
+            'maintenance_optimization': 0.03,  # 3% from maintenance
+            'compliance_improvement': 0.02,  # 2% from compliance
+            'technology_premium': 0.02  # 2% from being "smart"
+        }
+        
+        total_impact = sum(impact_factors.values())
+        value_increase = base_value * total_impact
+        new_value = base_value + value_increase
+        
+        response += "### 📊 Valuation Breakdown\n\n"
+        response += f"**Base Property Value:** **${base_value:,.0f}**\n"
+        response += f"**With IoT Implementation:** **${new_value:,.0f}**\n"
+        response += f"**Value Increase:** **${value_increase:,.0f}** ({total_impact*100:.1f}%)\n\n"
+        
+        response += "### 📈 Value Drivers\n\n"
+        for factor, impact in impact_factors.items():
+            factor_value = base_value * impact
+            readable_name = factor.replace('_', ' ').title()
+            response += f"- **{readable_name}:** +${factor_value:,.0f} ({impact*100:.1f}%)\n"
+        
+        response += "\n### 🏆 Comparative Analysis\n\n"
+        response += "- **Traditional Building:** Relies on manual monitoring\n"
+        response += "- **IoT-Enabled Building:** Real-time analytics, predictive maintenance\n"
+        response += "- **Premium Justification:** Lower operating costs, reduced risk, future-proofing\n"
+        
+        response += "\n### 🎯 Market Positioning\n\n"
+        response += "**With IoT:** Competitive advantage, premium rental/sale pricing\n"
+        response += "**Without IoT:** Standard market rates, higher operational risks\n"
+        
+        return response
+    
+    def _comparison_response(self, confidence: float, data: Dict, analysis: Dict) -> str:
+        """Comparison analysis response"""
+        response = "## 🔄 System Comparison Analysis\n\n"
+        
+        response += "### 📊 Comparison Matrix\n\n"
+        response += "| Feature | Wired Sensors | Wireless Sensors | Hybrid System |\n"
+        response += "|---------|--------------|-----------------|---------------|\n"
+        response += "| **Installation Cost** | High | Medium | High-Medium |\n"
+        response += "| **Maintenance** | Low | Medium-High | Medium |\n"
+        response += "| **Reliability** | Very High | High | Very High |\n"
+        response += "| **Flexibility** | Low | Very High | High |\n"
+        response += "| **Data Rate** | Very High | High | Very High |\n"
+        response += "| **Scalability** | Difficult | Easy | Moderate |\n\n"
+        
+        response += "### 🎯 Recommendations by Use Case\n\n"
+        response += "**Industrial Buildings:** Wired sensors for critical systems, wireless for flexibility\n"
+        response += "**Commercial Offices:** Wireless for easy reconfiguration\n"
+        response += "**Mixed-Use:** Hybrid approach for balance of reliability and flexibility\n"
+        
+        response += "\n### 💰 Cost-Benefit Analysis\n\n"
+        response += "- **Wired:** Higher upfront, lower long-term costs\n"
+        response += "- **Wireless:** Lower upfront, potential higher maintenance\n"
+        response += "- **Hybrid:** Balanced approach, optimal for most buildings\n"
+        
+        return response
+    
+    def _recommendation_response(self, confidence: float, data: Dict, analysis: Dict) -> str:
+        """Recommendation analysis response"""
+        building_size = data.get('building_size', 5000)
+        
+        response = "## 🎯 Personalized Recommendations\n\n"
+        
+        response += "### 📋 Recommended Implementation Plan\n\n"
+        
+        response += "**Phase 1: Foundation (Months 1-3)**\n"
+        response += f"- **Priority Sensors:** Temperature & Energy ({building_size * 0.3:.0f} sensors)\n"
+        response += f"- **Estimated Cost:** ${building_size * 2:,.0f}\n"
+        response += "- **Goal:** Baseline data collection, identify high-impact areas\n\n"
+        
+        response += "**Phase 2: Expansion (Months 4-6)**\n"
+        response += f"- **Additional Sensors:** Humidity, Air Quality ({building_size * 0.2:.0f} sensors)\n"
+        response += f"- **Estimated Cost:** ${building_size * 1.5:,.0f}\n"
+        response += "- **Goal:** Comprehensive monitoring, anomaly detection\n\n"
+        
+        response += "**Phase 3: Optimization (Months 7-12)**\n"
+        response += "- **Advanced Analytics:** Predictive maintenance, optimization algorithms\n"
+        response += f"- **Estimated Cost:** ${building_size * 1:,.0f}\n"
+        response += "- **Goal:** Automated systems, maximum efficiency\n\n"
+        
+        response += "### 💡 Key Recommendations\n\n"
+        response += "1. **Start Small, Scale Smart:** Begin with critical areas\n"
+        response += "2. **Focus on ROI:** Prioritize energy and maintenance savings\n"
+        response += "3. **Consider Future Needs:** Choose scalable solutions\n"
+        response += "4. **Training is Crucial:** Ensure staff can use the system effectively\n"
+        
+        return response
+    
+    def _technical_response(self, confidence: float, data: Dict, analysis: Dict) -> str:
+        """Technical analysis response"""
+        response = "## 🔧 Technical Specifications & Requirements\n\n"
+        
+        response += "### 📡 IoT System Architecture\n\n"
+        response += "**Sensing Layer:**\n"
+        response += "- Temperature Sensors: ±0.5°C accuracy\n"
+        response += "- Humidity Sensors: ±3% RH accuracy\n"
+        response += "- Energy Meters: Class 1 accuracy\n"
+        response += "- Motion Sensors: 10m range\n\n"
+        
+        response += "**Network Layer:**\n"
+        response += "- Protocol: MQTT/HTTP for data transmission\n"
+        response += "- Security: TLS 1.3 encryption\n"
+        response += "- Bandwidth: 100 Mbps minimum\n"
+        response += "- Latency: < 100ms for critical alerts\n\n"
+        
+        response += "**Application Layer:**\n"
+        response += "- Dashboard: Real-time monitoring\n"
+        response += "- Analytics: Machine learning for anomaly detection\n"
+        response += "- Alerts: SMS/Email/App notifications\n"
+        response += "- Reporting: Automated PDF/Excel reports\n\n"
+        
+        response += "### ⚙️ Installation Requirements\n\n"
+        response += "**Physical Requirements:**\n"
+        response += "- Power: PoE or battery options\n"
+        response += "- Mounting: Standard DIN rail or wall mount\n"
+        response += "- Environment: IP65 rating for industrial areas\n"
+        response += "- Temperature Range: -20°C to 60°C operation\n\n"
+        
+        response += "**IT Requirements:**\n"
+        response += "- Network: VLAN segmentation recommended\n"
+        response += "- Storage: 1TB minimum for 1-year data retention\n"
+        response += "- Backup: Daily automated backups\n"
+        response += "- Security: Regular firmware updates\n"
+        
+        return response
+    
     def _general_response(self, confidence: float, data: Dict, analysis: Dict) -> str:
         return """## 🧠 IoT Assistant Response
 
@@ -383,12 +525,14 @@ I've analyzed your query and here's what I can help you with:
 4. 🏢 **Valuation** - Property value impact analysis
 5. 🔄 **Comparisons** - System comparisons and recommendations
 6. 🎯 **Recommendations** - Tailored suggestions for your building
+7. 🔧 **Technical** - Specifications and requirements
 
 ### Try Asking:
 - "Calculate ROI for a 5000m² building with $75k investment"
 - "Analyze temperature risks in my industrial building"
 - "Compare wired vs wireless sensor systems"
 - "How much will IoT increase my property value?"
+- "Technical requirements for IoT installation"
 
 *For more specific analysis, please provide building details or requirements.*"""
 
