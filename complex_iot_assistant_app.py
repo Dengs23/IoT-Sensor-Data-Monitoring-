@@ -7,6 +7,14 @@ from datetime import datetime, timedelta
 import re
 import json
 from typing import Dict, List, Any, Tuple
+import numpy as np
+import pandas as pd
+from scipy import stats, optimize, signal, integrate
+from sklearn.ensemble import IsolationForest
+from sklearn.cluster import KMeans
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.seasonal import seasonal_decompose
+
 
 # ==================== PAGE CONFIG ====================
 st.set_page_config(
@@ -18,10 +26,95 @@ st.set_page_config(
 
 # ==================== CORE SYSTEM ====================
 
+class MathematicalOptimizer:
+    """Mathematical optimization engine for IoT systems"""
+    
+    def __init__(self):
+        self.optimization_history = []
+    
+    def optimize_sensor_placement(self, building_dimensions, sensor_range):
+        """Optimal sensor placement using geometric optimization"""
+        import numpy as np
+        
+        length, width, height = building_dimensions
+        
+        # Calculate optimal grid spacing
+        optimal_spacing = sensor_range / np.sqrt(2)
+        
+        # Generate grid points
+        x_points = np.arange(0, length, optimal_spacing)
+        y_points = np.arange(0, width, optimal_spacing)
+        z_points = np.arange(0, height, optimal_spacing)
+        
+        # Create mesh grid
+        X, Y, Z = np.meshgrid(x_points, y_points, z_points, indexing='ij')
+        coordinates = np.vstack([X.ravel(), Y.ravel(), Z.ravel()]).T
+        
+        # Calculate coverage
+        total_volume = length * width * height
+        coverage_radius = sensor_range
+        sensor_volume = (4/3) * np.pi * (coverage_radius**3)
+        estimated_coverage = min(100, (len(coordinates) * sensor_volume / total_volume) * 100)
+        
+        return {
+            'coordinates': coordinates.tolist(),
+            'optimal_spacing': optimal_spacing,
+            'num_sensors': len(coordinates),
+            'coverage_percentage': round(estimated_coverage, 2)
+        }
+    
+    def energy_consumption_optimization(self, power_data):
+        """Optimize energy consumption"""
+        import numpy as np
+        
+        power = np.array(power_data)
+        
+        # Simple optimization: shift usage to off-peak
+        sorted_indices = np.argsort(power)
+        optimal_schedule = np.zeros_like(power)
+        
+        # Distribute high consumption evenly
+        for i, idx in enumerate(sorted_indices):
+            optimal_schedule[idx] = power[idx] * (0.5 + 0.5 * i / len(power))
+        
+        original_consumption = np.sum(power)
+        optimized_consumption = np.sum(optimal_schedule)
+        savings = ((original_consumption - optimized_consumption) / original_consumption) * 100
+        
+        return {
+            'optimal_schedule': optimal_schedule.tolist(),
+            'savings_percentage': round(savings, 2)
+        }
+    
+    def predictive_maintenance_model(self, sensor_data):
+        """Predictive maintenance using statistical analysis"""
+        import numpy as np
+        import pandas as pd
+        
+        data = np.array(sensor_data)
+        
+        # Calculate rolling statistics
+        window = 10
+        rolling_mean = pd.Series(data).rolling(window=window).mean().dropna().values
+        rolling_std = pd.Series(data).rolling(window=window).std().dropna().values
+        
+        # Calculate z-scores
+        z_scores = (data[window-1:] - rolling_mean) / rolling_std
+        
+        # Detect anomalies
+        anomalies = np.where(np.abs(z_scores) > 3)[0]
+        
+        return {
+            'anomalies': anomalies.tolist(),
+            'z_scores': z_scores.tolist()
+        }
+
+
 class IntentClassifier:
     """Advanced intent classification system"""
     
     def __init__(self):
+        self.optimizer = MathematicalOptimizer()
         self.intents = {
             'financial_analysis': {
                 'keywords': ['roi', 'return', 'investment', 'payback', 'cost', 'profit', 'savings', 'budget', 'financial'],
@@ -77,6 +170,15 @@ class IntentClassifier:
                     "Best practices for sensor deployment"
                 ]
             },
+            'mathematical_optimization': {
+                'keywords': ['optimize', 'optimal', 'mathematical', 'calculate', 'algorithm', 'solve', 'maximum', 'minimum', 'optimization'],
+                'weight': 1.6,
+                'examples': [
+                    "Optimize sensor placement mathematically",
+                    "Calculate optimal energy consumption",
+                    "Mathematical solution for sensor deployment"
+                ]
+            },
             'technical': {
                 'keywords': ['how', 'why', 'work', 'function', 'technical', 'specification', 'install', 'configure'],
                 'weight': 1.1,
@@ -87,7 +189,6 @@ class IntentClassifier:
                 ]
             }
         }
-    
     def classify(self, text: str) -> Tuple[str, float, Dict]:
         """Classify intent with confidence score and extracted data"""
         text_lower = text.lower()
