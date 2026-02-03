@@ -1,0 +1,218 @@
+Last login: Mon Jan 26 14:02:20 on console
+
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+Dengas-Laptop:~ dengaramathuba$ #!/bin/bash
+Dengas-Laptop:~ dengaramathuba$ # deploy_to_azure.sh
+Dengas-Laptop:~ dengaramathuba$ 
+Dengas-Laptop:~ dengaramathuba$ # Configuration
+Dengas-Laptop:~ dengaramathuba$ RESOURCE_GROUP="iot-analytics-rg"
+Dengas-Laptop:~ dengaramathuba$ LOCATION="eastus2"
+Dengas-Laptop:~ dengaramathuba$ APP_NAME="iot-sensor-analytics"
+Dengas-Laptop:~ dengaramathuba$ REGISTRY_NAME="iotacr$(date +%s)"
+Dengas-Laptop:~ dengaramathuba$ 
+Dengas-Laptop:~ dengaramathuba$ echo "🚀 Deploying IoT Analytics Platform to Azure..."
+🚀 Deploying IoT Analytics Platform to Azure...
+Dengas-Laptop:~ dengaramathuba$ 
+Dengas-Laptop:~ dengaramathuba$ # Create Resource Group
+Dengas-Laptop:~ dengaramathuba$ echo "Creating resource group..."
+Creating resource group...
+Dengas-Laptop:~ dengaramathuba$ az group create --name $RESOURCE_GROUP --location $LOCATION
+-bash: az: command not found
+Dengas-Laptop:~ dengaramathuba$ 
+Dengas-Laptop:~ dengaramathuba$ # Create Container Registry
+Dengas-Laptop:~ dengaramathuba$ echo "Creating Container Registry..."
+Creating Container Registry...
+Dengas-Laptop:~ dengaramathuba$ az acr create --resource-group $RESOURCE_GROUP \
+>   --name $REGISTRY_NAME \
+>   --sku Basic \
+>   --admin-enabled true
+-bash: az: command not found
+Dengas-Laptop:~ dengaramathuba$ 
+Dengas-Laptop:~ dengaramathuba$ # Build and push Docker image
+Dengas-Laptop:~ dengaramathuba$ echo "Building and pushing Docker image..."
+Building and pushing Docker image...
+Dengas-Laptop:~ dengaramathuba$ az acr build --registry $REGISTRY_NAME \
+>   --image iot-analytics:latest \
+>   --file Dockerfile .
+-bash: az: command not found
+Dengas-Laptop:~ dengaramathuba$ 
+Dengas-Laptop:~ dengaramathuba$ # Create Azure Container Instance (for demo) or AKS (for production)
+Dengas-Laptop:~ dengaramathuba$ echo "Creating Container Instance..."
+Creating Container Instance...
+Dengas-Laptop:~ dengaramathuba$ az container create --resource-group $RESOURCE_GROUP \
+>   --name iot-analytics-app \
+>   --image $REGISTRY_NAME.azurecr.io/iot-analytics:latest \
+>   --dns-name-label iot-analytics-demo \
+>   --ports 5000 \
+>   --registry-username $(az acr credential show --name $REGISTRY_NAME --query username -o tsv) \
+>   --registry-password $(az acr credential show --name $REGISTRY_NAME --query passwords[0].value -o tsv) \
+>   --environment-variables \
+>     DATABASE_URL="your_cosmosdb_connection_string" \
+>     EVENTHUB_CONNECTION="your_eventhub_connection" \
+>     APP_ENV="production"
+-bash: az: command not found
+-bash: az: command not found
+-bash: az: command not found
+Dengas-Laptop:~ dengaramathuba$ 
+Dengas-Laptop:~ dengaramathuba$ # Create Cosmos DB
+Dengas-Laptop:~ dengaramathuba$ echo "Creating Cosmos DB..."
+Creating Cosmos DB...
+Dengas-Laptop:~ dengaramathuba$ az cosmosdb create --name iot-cosmos-$(date +%s) \
+>   --resource-group $RESOURCE_GROUP \
+>   --kind MongoDB \
+>   --locations regionName=$LOCATION failoverPriority=0 isZoneRedundant=False
+-bash: az: command not found
+Dengas-Laptop:~ dengaramathuba$ 
+Dengas-Laptop:~ dengaramathuba$ # Create Event Hubs
+Dengas-Laptop:~ dengaramathuba$ echo "Creating Event Hubs..."
+Creating Event Hubs...
+Dengas-Laptop:~ dengaramathuba$ az eventhubs namespace create --name iot-eventhub-ns \
+>   --resource-group $RESOURCE_GROUP \
+>   --location $LOCATION \
+>   --sku Standard
+-bash: az: command not found
+Dengas-Laptop:~ dengaramathuba$ 
+Dengas-Laptop:~ dengaramathuba$ az eventhubs eventhub create --name iot-sensor-data \
+>   --resource-group $RESOURCE_GROUP \
+>   --namespace-name iot-eventhub-ns \
+>   --message-retention 7 \
+>   --partition-count 4
+-bash: az: command not found
+Dengas-Laptop:~ dengaramathuba$ 
+Dengas-Laptop:~ dengaramathuba$ # Output deployment information
+Dengas-Laptop:~ dengaramathuba$ echo "✅ Deployment complete!"
+> echo ""
+> echo "📊 Access your application at:"
+> echo "   http://iot-analytics-demo.$LOCATION.azurecontainer.io:5000"
+> echo ""
+> echo "🔑 Connection strings:"
+> echo "   Cosmos DB: az cosmosdb keys list --name iot-cosmos-* --resource-group $RESOURCE_GROUP --type connection-strings"
+> echo "   Event Hubs: az eventhubs namespace authorization-rule keys list --resource-group $RESOURCE_GROUP --namespace-name iot-eventhub-ns --name RootManageSharedAccessKey"
+> #!/bin/bash
+> # deploy_to_azure.sh
+> 
+> # Configuration
+> RESOURCE_GROUP="iot-analytics-rg"
+> LOCATION="eastus2"
+> APP_NAME="iot-sensor-analytics"
+> REGISTRY_NAME="iotacr$(date +%s)"
+> 
+> echo "🚀 Deploying IoT Analytics Platform to Azure..."
+> 
+> # Create Resource Group
+> echo "Creating resource group..."
+> az group create --name $RESOURCE_GROUP --location $LOCATION
+> 
+> # Create Container Registry
+> echo "Creating Container Registry..."
+> az acr create --resource-group $RESOURCE_GROUP \
+>   --name $REGISTRY_NAME \
+>   --sku Basic \
+>   --admin-enabled true
+> 
+> # Build and push Docker image
+> echo "Building and pushing Docker image..."
+> az acr build --registry $REGISTRY_NAME \
+>   --image iot-analytics:latest \
+>   --file Dockerfile .
+> 
+> # Create Azure Container Instance (for demo) or AKS (for production)
+> echo "Creating Container Instance..."
+> az container create --resource-group $RESOURCE_GROUP \
+>   --name iot-analytics-app \
+>   --image $REGISTRY_NAME.azurecr.io/iot-analytics:latest \
+>   --dns-name-label iot-analytics-demo \
+>   --ports 5000 \
+>   --registry-username $(az acr credential show --name $REGISTRY_NAME --query username -o tsv) \
+>   --registry-password $(az acr credential show --name $REGISTRY_NAME --query passwords[0].value -o tsv) \
+>   --environment-variables \
+>     DATABASE_URL="your_cosmosdb_connection_string" \
+>     EVENTHUB_CONNECTION="your_eventhub_connection" \
+>     APP_ENV="production"
+> 
+> # Create Cosmos DB
+> echo "Creating Cosmos DB..."
+> az cosmosdb create --name iot-cosmos-$(date +%s) \
+>   --resource-group $RESOURCE_GROUP \
+>   --kind MongoDB \
+>   --locations regionName=$LOCATION failoverPriority=0 isZoneRedundant=False
+> 
+> # Create Event Hubs
+> echo "Creating Event Hubs..."
+> az eventhubs namespace create --name iot-eventhub-ns \
+>   --resource-group $RESOURCE_GROUP \
+>   --location $LOCATION \
+>   --sku Standard
+> 
+> az eventhubs eventhub create --name iot-sensor-data \
+>   --resource-group $RESOURCE_GROUP \
+>   --namespace-name iot-eventhub-ns \
+>   --message-retention 7 \
+>   --partition-count 4
+> 
+> # Output deployment information
+> echo "✅ Deployment complete!"
+-bash: az: command not found
+-bash: az: command not found
+✅
+echo 
+echo 📊 Access your application at:
+echo  http://iot-analytics-demo.eastus2.azurecontainer.io:5000
+echo 
+echo 🔑 Connection strings:
+echo  Cosmos DB: az cosmosdb keys list --name iot-cosmos-* --resource-group iot-analytics-rg --type connection-strings
+echo  Event Hubs: az eventhubs namespace authorization-rule keys list --resource-group iot-analytics-rg --namespace-name iot-eventhub-ns --name RootManageSharedAccessKey
+#!/bin/bash
+# deploy_to_azure.sh
+
+# Configuration
+RESOURCE_GROUP=iot-analytics-rg
+LOCATION=eastus2
+APP_NAME=iot-sensor-analytics
+REGISTRY_NAME=iotacr1769443433
+
+echo 🚀 Deploying IoT Analytics Platform to Azure...
+
+# Create Resource Group
+echo Creating resource group...
+az group create --name iot-analytics-rg --location eastus2
+
+# Create Container Registry
+echo Creating Container Registry...
+az acr create --resource-group iot-analytics-rg   --name iotacr1769443428   --sku Basic   --admin-enabled true
+
+# Build and push Docker image
+echo Building and pushing Docker image...
+az acr build --registry iotacr1769443428   --image iot-analytics:latest   --file Dockerfile .
+
+# Create Azure Container Instance (for demo) or AKS (for production)
+echo Creating Container Instance...
+az container create --resource-group iot-analytics-rg   --name iot-analytics-app   --image iotacr1769443428.azurecr.io/iot-analytics:latest   --dns-name-label iot-analytics-demo   --ports 5000   --registry-username    --registry-password    --environment-variables     DATABASE_URL=your_cosmosdb_connection_string     EVENTHUB_CONNECTION=your_eventhub_connection     APP_ENV=production
+
+# Create Cosmos DB
+echo Creating Cosmos DB...
+az cosmosdb create --name iot-cosmos-1769443433   --resource-group iot-analytics-rg   --kind MongoDB   --locations regionName=eastus2 failoverPriority=0 isZoneRedundant=False
+
+# Create Event Hubs
+echo Creating Event Hubs...
+az eventhubs namespace create --name iot-eventhub-ns   --resource-group iot-analytics-rg   --location eastus2   --sku Standard
+
+az eventhubs eventhub create --name iot-sensor-data   --resource-group iot-analytics-rg   --namespace-name iot-eventhub-ns   --message-retention 7   --partition-count 4
+
+# Output deployment information
+echo ✅
+Dengas-Laptop:~ dengaramathuba$ echo ""
+
+Dengas-Laptop:~ dengaramathuba$ echo "📊 Access your application at:"
+📊 Access your application at:
+Dengas-Laptop:~ dengaramathuba$ echo "   http://iot-analytics-demo.$LOCATION.azurecontainer.io:5000"
+   http://iot-analytics-demo.eastus2.azurecontainer.io:5000
+Dengas-Laptop:~ dengaramathuba$ echo ""
+
+Dengas-Laptop:~ dengaramathuba$ echo "🔑 Connection strings:"
+🔑 Connection strings:
+Dengas-Laptop:~ dengaramathuba$ echo "   Cosmos DB: az cosmosdb keys list --name iot-cosmos-* --resource-group $RESOURCE_GROUP --type connection-strings"
+   Cosmos DB: az cosmosdb keys list --name iot-cosmos-* --resource-group iot-analytics-rg --type connection-strings
+Dengas-Laptop:~ dengaramathuba$ echo "   Event Hubs: az eventhubs namespace authorization-rule keys list --resource-group $RESOURCE_GROUP --namespace-name iot-eventhub-ns --name RootManageSharedAccessKey"
